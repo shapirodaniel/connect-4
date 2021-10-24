@@ -23,6 +23,7 @@ const state = {
     3: [],
     4: [],
     5: [],
+    6: [],
   },
 };
 
@@ -34,12 +35,10 @@ function getMove() {
 function getNodeIdFromState(colIdx) {
   let positionValue = state.columns[colIdx].length - 1;
 
-  console.log(`positionValue is: ${positionValue}`);
-
   if (positionValue < 0) {
     positionValue = 0;
   }
-  const rowIdx = Math.abs(positionValue - 6);
+  const rowIdx = Math.abs(positionValue - 5);
   return `col-${colIdx}:${rowIdx}`;
 }
 
@@ -50,7 +49,11 @@ BOARD.addEventListener("click", (e) => {
 
   let node = e.target;
 
-  if (e.target.className === "board-cell-circle") {
+  if (
+    e.target.className === "board-cell-circle" ||
+    e.target.className.includes("red") ||
+    e.target.className.includes("yellow")
+  ) {
     node = e.target.parentElement;
   }
 
@@ -60,12 +63,9 @@ BOARD.addEventListener("click", (e) => {
   if (state.columns[colIdx].length < 6) {
     state.columns[colIdx].push(move);
     turn++;
-    console.log(state);
 
     const classNameColor = move[0] === "R" ? "red" : "yellow";
     const nodeWhereMoveLandsId = getNodeIdFromState(colIdx);
-
-    console.log(nodeWhereMoveLandsId);
 
     const NODE_WHERE_MOVE_LANDS = document.getElementById(nodeWhereMoveLandsId);
     NODE_WHERE_MOVE_LANDS.firstElementChild.className = `${classNameColor}-piece`;
