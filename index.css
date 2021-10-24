@@ -87,5 +87,5 @@ body {
 }
 
 #board > div:hover {
-  border: 2px solid yellow;
+  border: 1px solid yellow;
 }

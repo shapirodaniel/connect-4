@@ -1,19 +1,6 @@
-const BOARD = document.getElementById("board");
-const COLUMNS = Array.from(document.getElementsByClassName("column"));
-
-COLUMNS.forEach((column, colIdx) => {
-  const cells = new Array(6)
-    .fill(null)
-    .map((_, rowIdx) => {
-      return `
-        <div class="board-cell-outer" id="col-${colIdx}:${rowIdx}">
-          <div class="board-cell-circle"></div>
-        </div>
-      `;
-    })
-    .join("");
-  column.innerHTML = cells;
-});
+////////////////
+/* GAME STATE */
+////////////////
 
 const state = {
   columns: {
@@ -33,15 +20,18 @@ const getMatrix = () =>
     return acc;
   }, []);
 
+///////////////////////////
+/* GLOBALS AND FUNCTIONS */
+///////////////////////////
+
 let turn = 0;
+
 function getMove() {
   return turn % 2 === 0 ? "R" : "Y";
 }
 
 function getNodeIdFromState(colIdx) {
   let positionValue = state.columns[colIdx].length - 1;
-
-  console.log(positionValue);
 
   if (positionValue < 0) {
     positionValue = 0;
@@ -50,11 +40,30 @@ function getNodeIdFromState(colIdx) {
   return `col-${colIdx}:${rowIdx}`;
 }
 
-function getNextNodeIdFromState(colIdx) {
-  console.log(`inside next node id ${colIdx}`);
-  const nodeId = getNodeIdFromState(colIdx);
-  return nodeId;
-}
+//////////////////////////////////
+/* DOM SETUP: BOARD AND COLUMNS */
+//////////////////////////////////
+
+const BOARD = document.getElementById("board");
+const COLUMNS = Array.from(document.getElementsByClassName("column"));
+
+COLUMNS.forEach((column, colIdx) => {
+  const cells = new Array(6)
+    .fill(null)
+    .map((_, rowIdx) => {
+      return `
+        <div class="board-cell-outer" id="col-${colIdx}:${rowIdx}">
+          <div class="board-cell-circle"></div>
+        </div>
+      `;
+    })
+    .join("");
+  column.innerHTML = cells;
+});
+
+////////////
+/* EVENTS */
+////////////
 
 BOARD.addEventListener("click", (e) => {
   if (e.target.className === "column") {
@@ -65,8 +74,8 @@ BOARD.addEventListener("click", (e) => {
 
   if (
     e.target.className === "board-cell-circle" ||
-    e.target.className.includes("red") ||
-    e.target.className.includes("yellow")
+    e.target.className === "red-piece" ||
+    e.target.className === "yellow-piece"
   ) {
     node = e.target.parentElement;
   }
@@ -85,7 +94,7 @@ BOARD.addEventListener("click", (e) => {
     NODE_WHERE_MOVE_LANDS.firstElementChild.className = `${classNameColor}-piece`;
   }
 
-  console.log(getMatrix());
+  console.log("matrix is: ", getMatrix());
 });
 
 // to find winner, minmax algo
