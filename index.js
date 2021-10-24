@@ -106,16 +106,8 @@ function checkAscendingLeftRightDiagonal(
   const [startCol, startRow] = startCoord;
   const startPiece = matrix[startCol][5 - startRow];
 
-  console.log(startPiece, startCoord);
-
-  if (!startPiece) {
-    return false;
-  }
-
   const [nextCol, nextRow] = nextCoord;
   const nextPiece = matrix[nextCol][5 - nextRow];
-
-  console.log(nextPiece, nextCoord);
 
   if (count === 2 && startPiece === nextPiece) {
     return true;
@@ -144,35 +136,19 @@ function checkDescendingLeftRightDiagonal(
   const [startCol, startRow] = startCoord;
   const startPiece = matrix[startCol][5 - startRow];
 
-  if (!startPiece) {
-    return false;
-  }
-
-  // console.log("hi from checkAscDiag");
-  // console.log("startCoord", startCoord);
-  // console.log(startPiece);
-  // console.log("count is: ", count);
-  // console.log("matrix is: ", matrix);
-
   const [nextCol, nextRow] = nextCoord;
-  const nextPiece = matrix[nextCol][nextRow];
-
-  // console.log("nextCoord", nextCoord);
-  // console.log(nextPiece);
+  const nextPiece = matrix[nextCol][5 - nextRow];
 
   if (count === 2 && startPiece === nextPiece) {
-    // console.log("found 4 in a row");
     return true;
   } else {
     if (!nextPiece) {
-      // console.log("out of pieces to check", startCoord, nextCoord, count);
       return false;
     }
     if (nextPiece !== startPiece) {
-      // console.log("resetting count");
       count = -1;
     }
-    // console.log("tail recursing");
+
     return checkDescendingLeftRightDiagonal(
       nextCoord,
       [nextCol + 1, nextRow + 1],
@@ -186,10 +162,6 @@ function checkDescendingLeftRightDiagonal(
 function checkRow(startCoord, nextCoord, count = 0, matrix) {
   const [startCol, startRow] = startCoord;
   const startPiece = matrix[startCol][startRow];
-
-  if (!startPiece) {
-    return false;
-  }
 
   const [nextCol, nextRow] = nextCoord;
   const nextPiece = matrix[nextCol][nextRow];
