@@ -38,7 +38,7 @@ body {
   align-items: center;
   justify-content: center;
   height: min-content;
-  width: 350px;
+  width: 360px;
   height: 300px;
   margin: 0 auto;
 }
@@ -84,4 +84,8 @@ body {
   position: relative;
   height: 50px;
   width: 50px;
+}
+
+#board > div:hover {
+  border: 2px solid yellow;
 }

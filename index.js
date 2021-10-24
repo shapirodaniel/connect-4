@@ -27,6 +27,12 @@ const state = {
   },
 };
 
+const getMatrix = () =>
+  Object.entries(state.columns).reduce((acc, [idx, column]) => {
+    acc.push(column);
+    return acc;
+  }, []);
+
 let turn = 0;
 function getMove() {
   return turn % 2 === 0 ? "R" : "Y";
@@ -35,11 +41,19 @@ function getMove() {
 function getNodeIdFromState(colIdx) {
   let positionValue = state.columns[colIdx].length - 1;
 
+  console.log(positionValue);
+
   if (positionValue < 0) {
     positionValue = 0;
   }
   const rowIdx = Math.abs(positionValue - 5);
   return `col-${colIdx}:${rowIdx}`;
+}
+
+function getNextNodeIdFromState(colIdx) {
+  console.log(`inside next node id ${colIdx}`);
+  const nodeId = getNodeIdFromState(colIdx);
+  return nodeId;
 }
 
 BOARD.addEventListener("click", (e) => {
@@ -70,4 +84,9 @@ BOARD.addEventListener("click", (e) => {
     const NODE_WHERE_MOVE_LANDS = document.getElementById(nodeWhereMoveLandsId);
     NODE_WHERE_MOVE_LANDS.firstElementChild.className = `${classNameColor}-piece`;
   }
+
+  console.log(getMatrix());
 });
+
+// to find winner, minmax algo
+// start from bottom left corner
