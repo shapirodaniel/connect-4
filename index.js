@@ -1,69 +1,73 @@
-const game = new Array(6).fill(null).map(() => new Array(7).fill(null));
-
 const BOARD = document.getElementById("board");
+const COLUMNS = Array.from(document.getElementsByClassName("column"));
 
-let cellIdx = 0;
+COLUMNS.forEach((column, colIdx) => {
+  const cells = new Array(6)
+    .fill(null)
+    .map((_, rowIdx) => {
+      return `
+        <div class="board-cell-outer" id="col-${colIdx}:${rowIdx}">
+          <div class="board-cell-circle"></div>
+        </div>
+      `;
+    })
+    .join("");
+  column.innerHTML = cells;
+});
 
-while (cellIdx < 42) {
-  const PIECE = document.createElement("div");
-  PIECE.className = "board-cell-outer";
-  const INNER_CIRCLE = document.createElement("div");
-  INNER_CIRCLE.className = "board-cell-circle";
-  INNER_CIRCLE.id = `cell-${cellIdx}`;
-  PIECE.appendChild(INNER_CIRCLE);
-  BOARD.appendChild(PIECE);
-  cellIdx++;
-}
-
-function getXY(nodeId) {
-  let positionNum = +nodeId.replace("cell-", "");
-  let col = positionNum % 7;
-  let row = 0;
-  while (positionNum > 6) {
-    row++;
-    positionNum -= 7;
-  }
-  return [row, col];
-}
+const state = {
+  columns: {
+    0: [],
+    1: [],
+    2: [],
+    3: [],
+    4: [],
+    5: [],
+  },
+};
 
 let turn = 0;
-
-function getPossibleMovesFromNodeId(nodeId) {
-  let res = [];
-  let currentValue = +nodeId.replace("cell-", "");
-  while (currentValue >= 0) {
-    res.push(currentValue);
-    currentValue -= 7;
-  }
-  return res;
+function getMove() {
+  return turn % 2 === 0 ? "R" : "Y";
 }
 
-function move(movesArray, xPosition, yPosition) {
-  for (let i = 0; i < movesArray.length; i++) {
-    if (!game[xPosition][yPosition]) {
-      const move = turn % 2 === 0 ? "R" : "Y";
-      game[xPosition][yPosition] = move;
-    }
-    return;
+function getNodeIdFromState(colIdx) {
+  let positionValue = state.columns[colIdx].length - 1;
+
+  console.log(`positionValue is: ${positionValue}`);
+
+  if (positionValue < 0) {
+    positionValue = 0;
   }
+  const rowIdx = Math.abs(positionValue - 6);
+  return `col-${colIdx}:${rowIdx}`;
 }
 
 BOARD.addEventListener("click", (e) => {
-  // funnel clicks on edge of cell to cell
-  let node = e.target;
-  if (e.target.classList.contains("board-cell-outer")) {
-    node = e.target.firstElementChild;
+  if (e.target.className === "column") {
+    return;
   }
-  console.log(node);
 
-  const [x, y] = getXY(node.id);
-  console.log("xy positions are: ", x, y);
+  let node = e.target;
 
-  const possibleMoves = getPossibleMovesFromNodeId(node.id);
-  console.log("positions: ", possibleMoves);
+  if (e.target.className === "board-cell-circle") {
+    node = e.target.parentElement;
+  }
 
-  move(possibleMoves, x, y);
-  console.log("game is now: ", game);
+  const move = getMove();
+  const colIdx = node.id.slice(4).split(":")[0];
 
-  turn++;
+  if (state.columns[colIdx].length < 6) {
+    state.columns[colIdx].push(move);
+    turn++;
+    console.log(state);
+
+    const classNameColor = move[0] === "R" ? "red" : "yellow";
+    const nodeWhereMoveLandsId = getNodeIdFromState(colIdx);
+
+    console.log(nodeWhereMoveLandsId);
+
+    const NODE_WHERE_MOVE_LANDS = document.getElementById(nodeWhereMoveLandsId);
+    NODE_WHERE_MOVE_LANDS.firstElementChild.className = `${classNameColor}-piece`;
+  }
 });

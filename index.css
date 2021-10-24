@@ -62,20 +62,11 @@ body {
   height: 44px;
 }
 
-.red-piece,
-.yellow-piece {
-  position: absolute;
-  top: 0.2em;
-  left: 0.2em;
-}
-
 .red-piece {
-  z-index: -1;
   background-color: var(--red);
 }
 
 .yellow-piece {
-  z-index: -1;
   background-color: var(--yellow);
 }
 
