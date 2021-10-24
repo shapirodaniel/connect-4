@@ -10,6 +10,13 @@
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+.red {
+  color: var(--red);
+}
+.yellow {
+  color: var(--yellow);
+}
+
 body {
   display: flex;
   flex-direction: column;
@@ -83,4 +90,19 @@ body {
 .column:hover {
   border-left: 1px solid var(--yellow);
   border-right: 1px solid var(--yellow);
+}
+
+/* turn */
+
+#whoseTurn {
+  width: 365px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: black;
+  padding: 1em;
+  color: white;
+}
+#whoseTurn > span {
+  margin: 0.5em;
 }

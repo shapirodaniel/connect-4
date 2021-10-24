@@ -82,6 +82,10 @@ BOARD.addEventListener("click", (e) => {
 
     const NODE_WHERE_MOVE_LANDS = document.getElementById(nodeWhereMoveLandsId);
     NODE_WHERE_MOVE_LANDS.firstElementChild.className = `${classNameColor}-piece`;
+
+    const nextMove = document.getElementById("nextMove");
+    nextMove.className = move[0] === "R" ? "yellow" : "red";
+    nextMove.innerText = move[0] === "R" ? "Yellow" : "Red";
   }
 
   const { won, winType } = didWin();
