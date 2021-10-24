@@ -38,9 +38,9 @@ body {
   align-items: center;
   justify-content: center;
   height: min-content;
-  width: 360px;
+  width: 375px;
   height: 300px;
-  margin: 0 auto;
+  margin: 1em auto;
 }
 
 .board-cell-outer {
@@ -70,22 +70,17 @@ body {
   background-color: var(--yellow);
 }
 
-#initPieces {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  /* visibility: hidden; */
-  height: 50px;
-  width: 350px;
-  margin: 0 auto;
-}
-
 .pieceContainer {
   position: relative;
   height: 50px;
   width: 50px;
 }
 
-#board > div:hover {
-  border: 1px solid yellow;
+.column {
+  border: 1px solid var(--blue);
+}
+
+.column:hover {
+  border-left: 1px solid var(--yellow);
+  border-right: 1px solid var(--yellow);
 }

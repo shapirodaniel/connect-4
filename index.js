@@ -3,22 +3,10 @@
 ////////////////
 
 const state = {
-  columns: {
-    0: [],
-    1: [],
-    2: [],
-    3: [],
-    4: [],
-    5: [],
-    6: [],
-  },
+  columns: [[], [], [], [], [], [], []],
 };
 
-const getMatrix = () =>
-  Object.entries(state.columns).reduce((acc, [idx, column]) => {
-    acc.push(column);
-    return acc;
-  }, []);
+const getMatrix = () => state.columns;
 
 ///////////////////////////
 /* GLOBALS AND FUNCTIONS */
@@ -94,8 +82,210 @@ BOARD.addEventListener("click", (e) => {
     NODE_WHERE_MOVE_LANDS.firstElementChild.className = `${classNameColor}-piece`;
   }
 
-  console.log("matrix is: ", getMatrix());
+  const won = didWin();
+
+  if (won) {
+    console.log("winner");
+    document.body.style.backgroundColor = "green";
+    document.getElementById("gameMsg").innerText = "Hooray you won! :)";
+  }
 });
 
-// to find winner, minmax algo
-// start from bottom left corner
+///////////////////////
+/* WIN DETERMINATION */
+///////////////////////
+
+function checkAscendingLeftRightDiagonal(
+  startCoord,
+  nextCoord,
+  count = 0,
+  matrix
+) {
+  const [startCol, startRow] = startCoord;
+  const startPiece = matrix[startCol][startRow];
+
+  if (!startPiece) {
+    return false;
+  }
+
+  const [nextCol, nextRow] = nextCoord;
+  const nextPiece = matrix[nextCol][nextRow];
+
+  if (count === 3 && startPiece === nextPiece) {
+    return true;
+  } else {
+    if (!nextPiece) {
+      return false;
+    }
+    if (nextPiece !== startPiece) {
+      count = -1;
+    }
+    return checkAscendingLeftRightDiagonal(
+      nextCoord,
+      [nextCol + 1, nextRow - 1],
+      ++count,
+      matrix
+    );
+  }
+}
+
+function checkDescendingLeftRightDiagonal(
+  startCoord,
+  nextCoord,
+  count = 0,
+  matrix
+) {
+  const [startCol, startRow] = startCoord;
+  const startPiece = matrix[startCol][startRow];
+
+  if (!startPiece) {
+    return false;
+  }
+
+  const [nextCol, nextRow] = nextCoord;
+  const nextPiece = matrix[nextCol][nextRow];
+
+  if (count === 3 && startPiece === nextPiece) {
+    return true;
+  } else {
+    if (!nextPiece) {
+      return false;
+    }
+    if (nextPiece !== startPiece) {
+      count = -1;
+    }
+    return checkDescendingLeftRightDiagonal(
+      nextCoord,
+      [nextCol + 1, nextRow + 1],
+      ++count,
+      matrix
+    );
+  }
+}
+
+// start from left
+function checkRow(startCoord, nextCoord, count = 0, matrix) {
+  const [startCol, startRow] = startCoord;
+  const startPiece = matrix[startCol][startRow];
+
+  if (!startPiece) {
+    return false;
+  }
+
+  const [nextCol, nextRow] = nextCoord;
+  const nextPiece = matrix[nextCol][nextRow];
+
+  if (count === 3 && startPiece === nextPiece) {
+    return true;
+  } else {
+    if (!nextPiece) {
+      return false;
+    }
+    if (nextPiece !== startPiece) {
+      count = -1;
+    }
+    return checkRow(nextCoord, [nextCol + 1, nextRow], ++count, matrix);
+  }
+}
+
+// start from bottom
+function checkCol(startCoord, nextCoord, count = 0, matrix) {
+  const [startCol, startRow] = startCoord;
+  const startPiece = matrix[startCol][startRow];
+
+  if (!startPiece) {
+    return false;
+  }
+
+  const [nextCol, nextRow] = nextCoord;
+  const nextPiece = matrix[nextCol][nextRow];
+
+  if (count === 3 && startPiece === nextPiece) {
+    return true;
+  } else {
+    if (!nextPiece) {
+      return false;
+    }
+    if (nextPiece !== startPiece) {
+      count = -1;
+    }
+    return checkCol(nextCoord, [nextCol, nextRow - 1], ++count, matrix);
+  }
+}
+
+function didWin() {
+  // starts from leftmost column
+  const rowStartIds = new Array(6)
+    .fill(null)
+    .map((_, rowIdx) => `col-0:${rowIdx}`);
+
+  // start from bottom row
+  const colStartIds = new Array(7)
+    .fill(null)
+    .map((_, colIdx) => `col-${colIdx}:5`);
+
+  const diagonalAscendingStartIds = new Array(6).fill(null).map((_, idx) => {
+    if (idx < 3) {
+      return `col-0:${idx + 3}`;
+    } else {
+      return `col-${idx - 2}:5`;
+    }
+  });
+
+  const diagonalDescendingStartIds = new Array(6).fill(null).map((_, idx) => {
+    if (idx < 4) {
+      return `col-${3 - idx}:0`;
+    } else {
+      return `col-0:${Math.abs(idx - 5)}`;
+    }
+  });
+
+  function getCoord(id) {
+    return id
+      .slice(4)
+      .split(":")
+      .map((val) => +val);
+  }
+
+  rowStartIds.forEach((id) => {
+    const startCoord = getCoord(id);
+    const [startCol, startRow] = startCoord;
+    const nextCoord = [startCol + 1, startRow];
+
+    return checkRow(startCoord, nextCoord, 0, getMatrix());
+  });
+
+  colStartIds.forEach((id) => {
+    const startCoord = getCoord(id);
+    const [startCol, startRow] = startCoord;
+    const nextCoord = [startCol, startRow - 1];
+
+    return checkCol(startCoord, nextCoord, 0, getMatrix());
+  });
+
+  diagonalAscendingStartIds.forEach((id) => {
+    const startCoord = getCoord(id);
+    const [startCol, startRow] = startCoord;
+    const nextCoord = [startCol + 1, startRow - 1];
+
+    return checkAscendingLeftRightDiagonal(
+      startCoord,
+      nextCoord,
+      0,
+      getMatrix()
+    );
+  });
+
+  diagonalDescendingStartIds.forEach((id) => {
+    const startCoord = getCoord(id);
+    const [startCol, startRow] = startCoord;
+    const nextCoord = [startCol + 1, startRow + 1];
+
+    return checkDescendingLeftRightDiagonal(
+      startCoord,
+      nextCoord,
+      0,
+      getMatrix()
+    );
+  });
+}
