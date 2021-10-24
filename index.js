@@ -68,6 +68,8 @@ BOARD.addEventListener("click", (e) => {
     node = e.target.parentElement;
   }
 
+  console.log("node.id is: ", node.id);
+
   const move = getMove();
   const colIdx = node.id.slice(4).split(":")[0];
 
@@ -82,12 +84,12 @@ BOARD.addEventListener("click", (e) => {
     NODE_WHERE_MOVE_LANDS.firstElementChild.className = `${classNameColor}-piece`;
   }
 
-  const won = didWin();
+  const { won, winType } = didWin();
 
   if (won) {
     console.log("winner");
     document.body.style.backgroundColor = "green";
-    document.getElementById("gameMsg").innerText = "Hooray you won! :)";
+    document.getElementById("gameMsg").innerText = `Winner: ${winType}`;
   }
 });
 
@@ -102,16 +104,20 @@ function checkAscendingLeftRightDiagonal(
   matrix
 ) {
   const [startCol, startRow] = startCoord;
-  const startPiece = matrix[startCol][startRow];
+  const startPiece = matrix[startCol][5 - startRow];
+
+  console.log(startPiece, startCoord);
 
   if (!startPiece) {
     return false;
   }
 
   const [nextCol, nextRow] = nextCoord;
-  const nextPiece = matrix[nextCol][nextRow];
+  const nextPiece = matrix[nextCol][5 - nextRow];
 
-  if (count === 3 && startPiece === nextPiece) {
+  console.log(nextPiece, nextCoord);
+
+  if (count === 2 && startPiece === nextPiece) {
     return true;
   } else {
     if (!nextPiece) {
@@ -136,24 +142,37 @@ function checkDescendingLeftRightDiagonal(
   matrix
 ) {
   const [startCol, startRow] = startCoord;
-  const startPiece = matrix[startCol][startRow];
+  const startPiece = matrix[startCol][5 - startRow];
 
   if (!startPiece) {
     return false;
   }
 
+  // console.log("hi from checkAscDiag");
+  // console.log("startCoord", startCoord);
+  // console.log(startPiece);
+  // console.log("count is: ", count);
+  // console.log("matrix is: ", matrix);
+
   const [nextCol, nextRow] = nextCoord;
   const nextPiece = matrix[nextCol][nextRow];
 
-  if (count === 3 && startPiece === nextPiece) {
+  // console.log("nextCoord", nextCoord);
+  // console.log(nextPiece);
+
+  if (count === 2 && startPiece === nextPiece) {
+    // console.log("found 4 in a row");
     return true;
   } else {
     if (!nextPiece) {
+      // console.log("out of pieces to check", startCoord, nextCoord, count);
       return false;
     }
     if (nextPiece !== startPiece) {
+      // console.log("resetting count");
       count = -1;
     }
+    // console.log("tail recursing");
     return checkDescendingLeftRightDiagonal(
       nextCoord,
       [nextCol + 1, nextRow + 1],
@@ -175,7 +194,7 @@ function checkRow(startCoord, nextCoord, count = 0, matrix) {
   const [nextCol, nextRow] = nextCoord;
   const nextPiece = matrix[nextCol][nextRow];
 
-  if (count === 3 && startPiece === nextPiece) {
+  if (count === 2 && startPiece === nextPiece) {
     return true;
   } else {
     if (!nextPiece) {
@@ -184,6 +203,7 @@ function checkRow(startCoord, nextCoord, count = 0, matrix) {
     if (nextPiece !== startPiece) {
       count = -1;
     }
+
     return checkRow(nextCoord, [nextCol + 1, nextRow], ++count, matrix);
   }
 }
@@ -191,16 +211,16 @@ function checkRow(startCoord, nextCoord, count = 0, matrix) {
 // start from bottom
 function checkCol(startCoord, nextCoord, count = 0, matrix) {
   const [startCol, startRow] = startCoord;
-  const startPiece = matrix[startCol][startRow];
+  const startPiece = matrix[startCol][5 - startRow];
 
   if (!startPiece) {
     return false;
   }
 
   const [nextCol, nextRow] = nextCoord;
-  const nextPiece = matrix[nextCol][nextRow];
+  const nextPiece = matrix[nextCol][5 - nextRow];
 
-  if (count === 3 && startPiece === nextPiece) {
+  if (count === 2 && startPiece === nextPiece) {
     return true;
   } else {
     if (!nextPiece) {
@@ -209,6 +229,7 @@ function checkCol(startCoord, nextCoord, count = 0, matrix) {
     if (nextPiece !== startPiece) {
       count = -1;
     }
+
     return checkCol(nextCoord, [nextCol, nextRow - 1], ++count, matrix);
   }
 }
@@ -224,21 +245,23 @@ function didWin() {
     .fill(null)
     .map((_, colIdx) => `col-${colIdx}:5`);
 
-  const diagonalAscendingStartIds = new Array(6).fill(null).map((_, idx) => {
-    if (idx < 3) {
-      return `col-0:${idx + 3}`;
-    } else {
-      return `col-${idx - 2}:5`;
-    }
-  });
+  const diagonalAscendingStartIds = [
+    "col-0:3",
+    "col-0:4",
+    "col-0:5",
+    "col-1:5",
+    "col-2:5",
+    "col-3:5",
+  ];
 
-  const diagonalDescendingStartIds = new Array(6).fill(null).map((_, idx) => {
-    if (idx < 4) {
-      return `col-${3 - idx}:0`;
-    } else {
-      return `col-0:${Math.abs(idx - 5)}`;
-    }
-  });
+  const diagonalDescendingStartIds = [
+    "col-3:0",
+    "col-2:0",
+    "col-1:0",
+    "col-0:0",
+    "col-0:1",
+    "col-0:2",
+  ];
 
   function getCoord(id) {
     return id
@@ -247,45 +270,59 @@ function didWin() {
       .map((val) => +val);
   }
 
-  rowStartIds.forEach((id) => {
+  let status = { won: false, winType: "" };
+
+  for (let i = 0; i < rowStartIds.length; i++) {
+    const id = rowStartIds[i];
     const startCoord = getCoord(id);
     const [startCol, startRow] = startCoord;
     const nextCoord = [startCol + 1, startRow];
+    const matrix = getMatrix();
 
-    return checkRow(startCoord, nextCoord, 0, getMatrix());
-  });
+    if (checkRow(startCoord, nextCoord, 0, matrix)) {
+      status = { won: true, winType: "row" };
+      return status;
+    }
+  }
 
-  colStartIds.forEach((id) => {
+  for (let i = 0; i < colStartIds.length; i++) {
+    const id = colStartIds[i];
     const startCoord = getCoord(id);
     const [startCol, startRow] = startCoord;
     const nextCoord = [startCol, startRow - 1];
+    const matrix = getMatrix();
 
-    return checkCol(startCoord, nextCoord, 0, getMatrix());
-  });
+    if (checkCol(startCoord, nextCoord, 0, matrix)) {
+      status = { won: true, winType: "col" };
+      return status;
+    }
+  }
 
-  diagonalAscendingStartIds.forEach((id) => {
+  for (let i = 0; i < diagonalAscendingStartIds.length; i++) {
+    const id = diagonalAscendingStartIds[i];
     const startCoord = getCoord(id);
     const [startCol, startRow] = startCoord;
     const nextCoord = [startCol + 1, startRow - 1];
+    const matrix = getMatrix();
 
-    return checkAscendingLeftRightDiagonal(
-      startCoord,
-      nextCoord,
-      0,
-      getMatrix()
-    );
-  });
+    if (checkAscendingLeftRightDiagonal(startCoord, nextCoord, 0, matrix)) {
+      status = { won: true, winType: "ascending diagonal" };
+      return status;
+    }
+  }
 
-  diagonalDescendingStartIds.forEach((id) => {
+  for (let i = 0; i < diagonalDescendingStartIds.length; i++) {
+    const id = diagonalDescendingStartIds[i];
     const startCoord = getCoord(id);
     const [startCol, startRow] = startCoord;
     const nextCoord = [startCol + 1, startRow + 1];
+    const matrix = getMatrix();
 
-    return checkDescendingLeftRightDiagonal(
-      startCoord,
-      nextCoord,
-      0,
-      getMatrix()
-    );
-  });
+    if (checkDescendingLeftRightDiagonal(startCoord, nextCoord, 0, matrix)) {
+      status = { won: true, winType: "descending diagonal" };
+      return status;
+    }
+  }
+
+  return status;
 }
