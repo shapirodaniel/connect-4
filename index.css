@@ -132,6 +132,7 @@ button.readyBtn {
   margin: 1em 0;
   cursor: pointer;
   visibility: hidden;
+  box-shadow: 4px 4px 0px lightgreen;
 }
 
 /* board */

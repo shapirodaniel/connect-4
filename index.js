@@ -230,6 +230,9 @@ function checkAscendingLeftRightDiagonal(
   const startPiece = matrix[startCol][5 - startRow];
 
   const [nextCol, nextRow] = nextCoord;
+  if (!nextCol || !nextRow) {
+    return false;
+  }
   const nextPiece = matrix[nextCol][5 - nextRow];
 
   if (count === 2 && startPiece === nextPiece) {
@@ -260,6 +263,9 @@ function checkDescendingLeftRightDiagonal(
   const startPiece = matrix[startCol][5 - startRow];
 
   const [nextCol, nextRow] = nextCoord;
+  if (!nextCol || !nextRow) {
+    return false;
+  }
   const nextPiece = matrix[nextCol][5 - nextRow];
 
   if (count === 2 && startPiece === nextPiece) {
@@ -286,9 +292,10 @@ function checkRow(startCoord, nextCoord, count = 0, matrix) {
   const [startCol, startRow] = startCoord;
   const startPiece = matrix[startCol][startRow];
 
-  console.log(nextCoord);
-
   const [nextCol, nextRow] = nextCoord;
+  if (!nextCol || !nextRow) {
+    return false;
+  }
   const nextPiece = matrix[nextCol][nextRow];
 
   if (count === 2 && startPiece === nextPiece) {
@@ -315,6 +322,9 @@ function checkCol(startCoord, nextCoord, count = 0, matrix) {
   }
 
   const [nextCol, nextRow] = nextCoord;
+  if (!nextCol || !nextRow) {
+    return false;
+  }
   const nextPiece = matrix[nextCol][5 - nextRow];
 
   if (count === 2 && startPiece === nextPiece) {
