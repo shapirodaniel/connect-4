@@ -12,6 +12,8 @@ const getMatrix = () => state.columns;
 /* GLOBALS AND FUNCTIONS */
 ///////////////////////////
 
+let player1;
+let player2;
 let turn = 0;
 
 function getMove() {
@@ -47,6 +49,64 @@ COLUMNS.forEach((column, colIdx) => {
     })
     .join("");
   column.innerHTML = cells;
+});
+
+// checkbox and textInput styling
+Array.from(document.querySelectorAll('input[type="checkbox"]')).forEach(
+  (checkbox) => {
+    checkbox.addEventListener("click", (e) => {
+      const textInput = e.target.parentElement.previousElementSibling;
+      if (e.target.checked) {
+        textInput.contentEditable = "false";
+        textInput.className = "textInputComputer";
+        textInput.innerText = "Computer";
+      } else {
+        textInput.contentEditable = "true";
+        textInput.className = "textInput";
+        textInput.innerText = "";
+      }
+    });
+  }
+);
+
+const PLAY_BTNS = Array.from(
+  document.querySelectorAll(".playBtnContainer > button")
+);
+
+PLAY_BTNS.forEach((button) => {
+  button.addEventListener("click", (e) => {
+    const textInput =
+      e.target.parentElement.parentElement.querySelector(".textInput");
+
+    if (e.target.innerText === "Ready") {
+      e.target.innerText = "Play";
+      e.target.className = "playBtn";
+      textInput.contentEditable = "true";
+      document.querySelector("#startGameBtn").style.visibility = "hidden";
+    } else {
+      e.target.innerText = "Ready";
+      e.target.className = "readyBtn";
+      textInput.contentEditable = "false";
+
+      // show start game btn if both players ready
+      if (PLAY_BTNS.every((btn) => btn.className === "readyBtn")) {
+        console.log("ready to play");
+        const bothComputer = Array.from(
+          document.querySelectorAll('input[type="checkbox"]')
+        ).every((box) => box.checked === "true");
+
+        console.log(bothComputer);
+
+        if (bothComputer) {
+          alert(
+            "At least one human player is required! Please change Player 1 or Player 2 and continue"
+          );
+        }
+
+        document.querySelector("#startGameBtn").style.visibility = "visible";
+      }
+    }
+  });
 });
 
 ////////////
@@ -96,6 +156,10 @@ BOARD.addEventListener("click", (e) => {
     document.getElementById("gameMsg").innerText = `Winner: ${winType}`;
   }
 });
+
+function startGame() {
+  console.log("game time! :)");
+}
 
 ///////////////////////
 /* WIN DETERMINATION */
