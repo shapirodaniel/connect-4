@@ -13,7 +13,7 @@
       <h1>4 In A Row!</h1>
       <div class="playerInfoCard">
         <label>Enter Player 1 Name:</label>
-        <div contenteditable class="textInput"></div>
+        <div contenteditable class="textInput" id="inputPlayer1"></div>
         <div class="playAsComputerContainer">
           <input
             id="checkboxPlayer1"
@@ -29,7 +29,7 @@
       </div>
       <div class="playerInfoCard">
         <label>Enter Player 2 Name:</label>
-        <div contenteditable class="textInput"></div>
+        <div contenteditable class="textInput" id="inputPlayer2"></div>
         <div class="playAsComputerContainer">
           <input
             id="checkboxPlayer2"
@@ -45,8 +45,6 @@
       </div>
       <button id="startGameBtn">Start Game!</button>
     </section>
-  </body>
-  <template id="boardTemplate">
     <section id="board">
       <div class="column" id="column-0"></div>
       <div class="column" id="column-1"></div>
@@ -56,14 +54,9 @@
       <div class="column" id="column-5"></div>
       <div class="column" id="column-6"></div>
     </section>
-  </template>
-  <template>
     <section id="whoseTurn">
       <span>Next move goes to:</span>
-      <span id="nextMove" class="red">Red</span>
+      <span id="nextMove" class="red"></span>
     </section>
-  </template>
-  <template id="controlsTemplate">
-    <section id="controls"></section>
-  </template>
+  </body>
 </html>

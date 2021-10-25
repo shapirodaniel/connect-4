@@ -69,14 +69,42 @@ Array.from(document.querySelectorAll('input[type="checkbox"]')).forEach(
   }
 );
 
+const TEXT_INPUTS = Array.from(
+  document.querySelectorAll(".textInput, .textInputComputer")
+);
+
+TEXT_INPUTS.forEach((input) => {
+  input.addEventListener("DOMCharacterDataModified", () => {
+    if (input.id === "inputPlayer1") {
+      player1 = input.innerText;
+    } else {
+      player2 = input.innerText;
+    }
+  });
+  input.addEventListener("blur", () => {
+    if (input.innerText.length > 20) {
+      alert("Please choose a player name less than 20 characters long");
+    }
+  });
+});
+
 const PLAY_BTNS = Array.from(
   document.querySelectorAll(".playBtnContainer > button")
 );
 
 PLAY_BTNS.forEach((button) => {
   button.addEventListener("click", (e) => {
-    const textInput =
+    let textInput =
       e.target.parentElement.parentElement.querySelector(".textInput");
+
+    if (!textInput) {
+      textInput =
+        e.target.parentElement.parentElement.querySelector(
+          ".textInputComputer"
+        );
+    }
+
+    console.log(textInput);
 
     if (e.target.innerText === "Ready") {
       e.target.innerText = "Play";
@@ -90,17 +118,17 @@ PLAY_BTNS.forEach((button) => {
 
       // show start game btn if both players ready
       if (PLAY_BTNS.every((btn) => btn.className === "readyBtn")) {
-        console.log("ready to play");
-        const bothComputer = Array.from(
-          document.querySelectorAll('input[type="checkbox"]')
-        ).every((box) => box.checked === "true");
-
-        console.log(bothComputer);
+        const bothComputer =
+          Array.from(document.querySelectorAll(".textInputComputer")).length ===
+          2;
 
         if (bothComputer) {
           alert(
             "At least one human player is required! Please change Player 1 or Player 2 and continue"
           );
+          e.target.innerText = "Play";
+          e.target.className = "playBtn";
+          return;
         }
 
         document.querySelector("#startGameBtn").style.visibility = "visible";
@@ -109,56 +137,69 @@ PLAY_BTNS.forEach((button) => {
   });
 });
 
+const START_GAME_BTN = document.getElementById("startGameBtn");
+START_GAME_BTN.addEventListener("click", () => {
+  startGame();
+});
+
 ////////////
 /* EVENTS */
 ////////////
 
-BOARD.addEventListener("click", (e) => {
-  if (e.target.className === "column") {
-    return;
-  }
+function initializeBoard() {
+  BOARD.addEventListener("click", (e) => {
+    if (e.target.className === "column") {
+      return;
+    }
 
-  let node = e.target;
+    let node = e.target;
 
-  if (
-    e.target.className === "board-cell-circle" ||
-    e.target.className === "red-piece" ||
-    e.target.className === "yellow-piece"
-  ) {
-    node = e.target.parentElement;
-  }
+    if (
+      e.target.className === "board-cell-circle" ||
+      e.target.className === "red-piece" ||
+      e.target.className === "yellow-piece"
+    ) {
+      node = e.target.parentElement;
+    }
 
-  console.log("node.id is: ", node.id);
+    console.log("node.id is: ", node.id);
 
-  const move = getMove();
-  const colIdx = node.id.slice(4).split(":")[0];
+    const move = getMove();
+    const colIdx = node.id.slice(4).split(":")[0];
 
-  if (state.columns[colIdx].length < 6) {
-    state.columns[colIdx].push(move);
-    turn++;
+    if (state.columns[colIdx].length < 6) {
+      state.columns[colIdx].push(move);
+      turn++;
 
-    const classNameColor = move[0] === "R" ? "red" : "yellow";
-    const nodeWhereMoveLandsId = getNodeIdFromState(colIdx);
+      const classNameColor = move[0] === "R" ? "red" : "yellow";
+      const nodeWhereMoveLandsId = getNodeIdFromState(colIdx);
 
-    const NODE_WHERE_MOVE_LANDS = document.getElementById(nodeWhereMoveLandsId);
-    NODE_WHERE_MOVE_LANDS.firstElementChild.className = `${classNameColor}-piece`;
+      const NODE_WHERE_MOVE_LANDS =
+        document.getElementById(nodeWhereMoveLandsId);
+      NODE_WHERE_MOVE_LANDS.firstElementChild.className = `${classNameColor}-piece`;
 
-    const nextMove = document.getElementById("nextMove");
-    nextMove.className = move[0] === "R" ? "yellow" : "red";
-    nextMove.innerText = move[0] === "R" ? "Yellow" : "Red";
-  }
+      const nextMove = document.getElementById("nextMove");
+      nextMove.className = move[0] === "R" ? "yellow" : "red";
+      nextMove.innerText = move[0] === "R" ? player2 : player1;
+    }
 
-  const { won, winType } = didWin();
+    const { won, winType } = didWin();
 
-  if (won) {
-    console.log("winner");
-    document.body.style.backgroundColor = "green";
-    document.getElementById("gameMsg").innerText = `Winner: ${winType}`;
-  }
-});
+    if (won) {
+      console.log("winner");
+      document.body.style.backgroundColor = "green";
+      document.getElementById("gameMsg").innerText = `Winner: ${winType}`;
+    }
+  });
+}
 
 function startGame() {
   console.log("game time! :)");
+  document.getElementById("enterNames").style.display = "none";
+  document.getElementById("board").style.display = "flex";
+  document.getElementById("whoseTurn").style.display = "flex";
+  document.getElementById("nextMove").innerText = player1;
+  initializeBoard();
 }
 
 ///////////////////////
