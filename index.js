@@ -181,6 +181,14 @@ function initializeBoard() {
       const nextMove = document.getElementById("nextMove");
       nextMove.className = move[0] === "R" ? "yellow" : "red";
       nextMove.innerText = move[0] === "R" ? player2 : player1;
+
+      if (nextMove.innerText === "Computer") {
+        console.log("computer move time");
+
+        COLUMNS[
+          Math.floor(Math.random() * COLUMNS.length)
+        ].firstElementChild.click();
+      }
     }
 
     const { won, winType } = didWin();
@@ -198,8 +206,14 @@ function startGame() {
   document.getElementById("enterNames").style.display = "none";
   document.getElementById("board").style.display = "flex";
   document.getElementById("whoseTurn").style.display = "flex";
-  document.getElementById("nextMove").innerText = player1;
   initializeBoard();
+  if (!player1) {
+    player1 = "Computer";
+  }
+  if (!player2) {
+    player2 = "Computer";
+  }
+  document.getElementById("nextMove").innerText = player1;
 }
 
 ///////////////////////
@@ -271,6 +285,8 @@ function checkDescendingLeftRightDiagonal(
 function checkRow(startCoord, nextCoord, count = 0, matrix) {
   const [startCol, startRow] = startCoord;
   const startPiece = matrix[startCol][startRow];
+
+  console.log(nextCoord);
 
   const [nextCol, nextRow] = nextCoord;
   const nextPiece = matrix[nextCol][nextRow];
