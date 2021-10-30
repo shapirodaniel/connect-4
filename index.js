@@ -146,6 +146,23 @@ START_GAME_BTN.addEventListener("click", () => {
 /* EVENTS */
 ////////////
 
+// quickstart functionality for debugging -- allows user to skip game initialization and start with two default players
+function quickStart() {
+  player1 = "alice";
+  player2 = "bob";
+  document.getElementById("inputPlayer1").innerText = "alice";
+  document.getElementById("inputPlayer2").innerText = "bob";
+
+  START_GAME_BTN.click();
+}
+
+const QUICK_START_BTN = document.getElementById("quickStart");
+QUICK_START_BTN.addEventListener("click", () => {
+  quickStart();
+});
+
+const NEXT_MOVE = document.getElementById("nextMove");
+
 function initializeBoard() {
   BOARD.addEventListener("click", (e) => {
     if (e.target.className === "column") {
@@ -178,17 +195,8 @@ function initializeBoard() {
         document.getElementById(nodeWhereMoveLandsId);
       NODE_WHERE_MOVE_LANDS.firstElementChild.className = `${classNameColor}-piece`;
 
-      const nextMove = document.getElementById("nextMove");
-      nextMove.className = move[0] === "R" ? "yellow" : "red";
-      nextMove.innerText = move[0] === "R" ? player2 : player1;
-
-      if (nextMove.innerText === "Computer") {
-        console.log("computer move time");
-
-        COLUMNS[
-          Math.floor(Math.random() * COLUMNS.length)
-        ].firstElementChild.click();
-      }
+      NEXT_MOVE.className = move[0] === "R" ? "yellow" : "red";
+      NEXT_MOVE.innerText = move[0] === "R" ? player2 : player1;
     }
 
     const { won, winType } = didWin();
@@ -199,6 +207,23 @@ function initializeBoard() {
       document.getElementById("gameMsg").innerText = `Winner: ${winType}`;
     }
   });
+}
+
+let nextComputerMove = () =>
+  COLUMNS[Math.floor(Math.random() * COLUMNS.length)].firstElementChild.click();
+
+let computerMoveInterval;
+
+function handleComputerMove() {
+  if (NEXT_MOVE.innerText === "Computer") {
+    nextComputerMove();
+  }
+}
+
+function listenForComputerMoves() {
+  computerMoveInterval = setInterval(() => {
+    handleComputerMove();
+  }, 1000);
 }
 
 function startGame() {
@@ -214,222 +239,18 @@ function startGame() {
     player2 = "Computer";
   }
   document.getElementById("nextMove").innerText = player1;
+  if (computerMoveInterval) {
+    computerMoveInterval = undefined;
+  }
+  listenForComputerMoves();
 }
 
 ///////////////////////
 /* WIN DETERMINATION */
 ///////////////////////
 
-function checkAscendingLeftRightDiagonal(
-  startCoord,
-  nextCoord,
-  count = 0,
-  matrix
-) {
-  const [startCol, startRow] = startCoord;
-  const startPiece = matrix[startCol][5 - startRow];
-
-  const [nextCol, nextRow] = nextCoord;
-  if (!nextCol || !nextRow) {
-    return false;
-  }
-  const nextPiece = matrix[nextCol][5 - nextRow];
-
-  if (count === 2 && startPiece === nextPiece) {
-    return true;
-  } else {
-    if (!nextPiece) {
-      return false;
-    }
-    if (nextPiece !== startPiece) {
-      count = -1;
-    }
-    return checkAscendingLeftRightDiagonal(
-      nextCoord,
-      [nextCol + 1, nextRow - 1],
-      ++count,
-      matrix
-    );
-  }
-}
-
-function checkDescendingLeftRightDiagonal(
-  startCoord,
-  nextCoord,
-  count = 0,
-  matrix
-) {
-  const [startCol, startRow] = startCoord;
-  const startPiece = matrix[startCol][5 - startRow];
-
-  const [nextCol, nextRow] = nextCoord;
-  if (!nextCol || !nextRow) {
-    return false;
-  }
-  const nextPiece = matrix[nextCol][5 - nextRow];
-
-  if (count === 2 && startPiece === nextPiece) {
-    return true;
-  } else {
-    if (!nextPiece) {
-      return false;
-    }
-    if (nextPiece !== startPiece) {
-      count = -1;
-    }
-
-    return checkDescendingLeftRightDiagonal(
-      nextCoord,
-      [nextCol + 1, nextRow + 1],
-      ++count,
-      matrix
-    );
-  }
-}
-
-// start from left
-function checkRow(startCoord, nextCoord, count = 0, matrix) {
-  const [startCol, startRow] = startCoord;
-  const startPiece = matrix[startCol][startRow];
-
-  const [nextCol, nextRow] = nextCoord;
-  if (!nextCol || !nextRow) {
-    return false;
-  }
-  const nextPiece = matrix[nextCol][nextRow];
-
-  if (count === 2 && startPiece === nextPiece) {
-    return true;
-  } else {
-    if (!nextPiece) {
-      return false;
-    }
-    if (nextPiece !== startPiece) {
-      count = -1;
-    }
-
-    return checkRow(nextCoord, [nextCol + 1, nextRow], ++count, matrix);
-  }
-}
-
-// start from bottom
-function checkCol(startCoord, nextCoord, count = 0, matrix) {
-  const [startCol, startRow] = startCoord;
-  const startPiece = matrix[startCol][5 - startRow];
-
-  if (!startPiece) {
-    return false;
-  }
-
-  const [nextCol, nextRow] = nextCoord;
-  if (!nextCol || !nextRow) {
-    return false;
-  }
-  const nextPiece = matrix[nextCol][5 - nextRow];
-
-  if (count === 2 && startPiece === nextPiece) {
-    return true;
-  } else {
-    if (!nextPiece) {
-      return false;
-    }
-    if (nextPiece !== startPiece) {
-      count = -1;
-    }
-
-    return checkCol(nextCoord, [nextCol, nextRow - 1], ++count, matrix);
-  }
-}
-
 function didWin() {
-  // starts from leftmost column
-  const rowStartIds = new Array(6)
-    .fill(null)
-    .map((_, rowIdx) => `col-0:${rowIdx}`);
-
-  // start from bottom row
-  const colStartIds = new Array(7)
-    .fill(null)
-    .map((_, colIdx) => `col-${colIdx}:5`);
-
-  const diagonalAscendingStartIds = [
-    "col-0:3",
-    "col-0:4",
-    "col-0:5",
-    "col-1:5",
-    "col-2:5",
-    "col-3:5",
-  ];
-
-  const diagonalDescendingStartIds = [
-    "col-3:0",
-    "col-2:0",
-    "col-1:0",
-    "col-0:0",
-    "col-0:1",
-    "col-0:2",
-  ];
-
-  function getCoord(id) {
-    return id
-      .slice(4)
-      .split(":")
-      .map((val) => +val);
-  }
-
   let status = { won: false, winType: "" };
-
-  for (let i = 0; i < rowStartIds.length; i++) {
-    const id = rowStartIds[i];
-    const startCoord = getCoord(id);
-    const [startCol, startRow] = startCoord;
-    const nextCoord = [startCol + 1, startRow];
-    const matrix = getMatrix();
-
-    if (checkRow(startCoord, nextCoord, 0, matrix)) {
-      status = { won: true, winType: "row" };
-      return status;
-    }
-  }
-
-  for (let i = 0; i < colStartIds.length; i++) {
-    const id = colStartIds[i];
-    const startCoord = getCoord(id);
-    const [startCol, startRow] = startCoord;
-    const nextCoord = [startCol, startRow - 1];
-    const matrix = getMatrix();
-
-    if (checkCol(startCoord, nextCoord, 0, matrix)) {
-      status = { won: true, winType: "col" };
-      return status;
-    }
-  }
-
-  for (let i = 0; i < diagonalAscendingStartIds.length; i++) {
-    const id = diagonalAscendingStartIds[i];
-    const startCoord = getCoord(id);
-    const [startCol, startRow] = startCoord;
-    const nextCoord = [startCol + 1, startRow - 1];
-    const matrix = getMatrix();
-
-    if (checkAscendingLeftRightDiagonal(startCoord, nextCoord, 0, matrix)) {
-      status = { won: true, winType: "ascending diagonal" };
-      return status;
-    }
-  }
-
-  for (let i = 0; i < diagonalDescendingStartIds.length; i++) {
-    const id = diagonalDescendingStartIds[i];
-    const startCoord = getCoord(id);
-    const [startCol, startRow] = startCoord;
-    const nextCoord = [startCol + 1, startRow + 1];
-    const matrix = getMatrix();
-
-    if (checkDescendingLeftRightDiagonal(startCoord, nextCoord, 0, matrix)) {
-      status = { won: true, winType: "descending diagonal" };
-      return status;
-    }
-  }
 
   return status;
 }
