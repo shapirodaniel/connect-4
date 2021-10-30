@@ -209,7 +209,7 @@ function initializeBoard() {
   });
 }
 
-let nextComputerMove = () =>
+const nextComputerMove = () =>
   COLUMNS[Math.floor(Math.random() * COLUMNS.length)].firstElementChild.click();
 
 let computerMoveInterval;
@@ -249,8 +249,116 @@ function startGame() {
 /* WIN DETERMINATION */
 ///////////////////////
 
+const rowStartIds = new Array(6)
+  .fill(null)
+  .map((_, rowIdx) => `col-0:${rowIdx}`);
+
+// start from bottom row
+const colStartIds = new Array(7)
+  .fill(null)
+  .map((_, colIdx) => `col-${colIdx}:5`);
+
+const diagonalAscendingStartIds = [
+  "col-0:3",
+  "col-0:4",
+  "col-0:5",
+  "col-1:5",
+  "col-2:5",
+  "col-3:5",
+];
+
+const diagonalDescendingStartIds = [
+  "col-3:0",
+  "col-2:0",
+  "col-1:0",
+  "col-0:0",
+  "col-0:1",
+  "col-0:2",
+];
+
+const categories = {
+  row: rowStartIds,
+  column: colStartIds,
+  diagonalAscending: diagonalAscendingStartIds,
+  diagonalDescending: diagonalDescendingStartIds,
+};
+
+function getCoord(id) {
+  return id
+    .slice(4)
+    .split(":")
+    .map((val) => +val);
+}
+
+function evaluateCategory(startCoord, nextCoord, count, matrix) {
+  const nextPosition = [
+    (startCoord[0] += nextCoord[0]),
+    (startCoord[1] += nextCoord[1]),
+  ];
+  const [nextCol, nextRow] = nextPosition;
+
+  let nextValue;
+  try {
+    nextValue = matrix[nextCol][nextRow];
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
+
+  if (count === 2 && matrix[startCoord[0]][startCoord[1]] === nextValue) {
+    return true;
+  } else {
+    if (count === 5) {
+      return false;
+    }
+    count = 0;
+    return evaluateCategory(nextPosition, nextCoord, ++count, matrix);
+  }
+}
+
+function checkWin(category) {
+  const ids = categories[category];
+  // console.log(ids.join(""));
+
+  let nextCoord;
+  // coords are [col, row] to match id selectors
+  switch (category) {
+    case "row":
+      nextCoord = [1, 0];
+      break;
+    case "column":
+      nextCoord = [0, -1];
+      break;
+    case "diagonalAscending":
+      nextCoord = [1, 1];
+      break;
+    case "diagonalDescending":
+      nextCoord = [1, -1];
+      break;
+  }
+
+  console.log(ids);
+
+  // for loop here over ids to start
+  // set winner and return if match
+  for (let i = 0; i < ids.length; i++) {
+    if (evaluateCategory(getCoord(ids[i]), nextCoord, 0, getMatrix())) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 function didWin() {
   let status = { won: false, winType: "" };
+  const categoryKeys = Object.keys(categories);
+
+  for (let i = 0; i < categoryKeys.length; i++) {
+    if (checkWin(categoryKeys[i])) {
+      status = { won: true, winType: categoryKeys[i] };
+    }
+  }
 
   return status;
 }
