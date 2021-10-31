@@ -6,9 +6,7 @@ const state = {
   columns: new Array(7).fill(null).map(() => new Array(6).fill(null)),
 };
 
-const height = [6, 6, 6, 6, 6, 6, 6];
-
-const getMatrix = () => state.columns;
+const height = [-1, -1, -1, -1, -1, -1, -1];
 
 ///////////////////////////
 /* GLOBALS AND FUNCTIONS */
@@ -34,7 +32,9 @@ COLUMNS.forEach((column, colIdx) => {
     .fill(null)
     .map((_, rowIdx) => {
       return `
-        <div class="board-cell-outer" id="col-${colIdx}:${rowIdx}">
+        <div class="board-cell-outer" id="col-${colIdx}:${Math.abs(
+        5 - rowIdx
+      )}">
           <div class="board-cell-circle"></div>
         </div>
       `;
@@ -176,11 +176,10 @@ function initializeBoard() {
     const move = getMove();
     const colIdx = node.id.slice(4).split(":")[0];
 
-    if (height[colIdx]) {
-      height[colIdx]--;
+    if (height[colIdx] < 6) {
+      height[colIdx]++;
       turn++;
-      state.columns[colIdx][5 - height[colIdx]] = move;
-      console.log(`height of column ${colIdx} is ${height[colIdx]}`);
+      state.columns[colIdx][height[colIdx]] = move;
 
       const nodeWhereMoveLandsId = `col-${colIdx}:${height[colIdx]}`;
       const classNameColor = move[0] === "R" ? "red" : "yellow";
@@ -238,9 +237,11 @@ function startGame() {
   listenForComputerMoves();
 }
 
-///////////////////////
-/* WIN DETERMINATION */
-///////////////////////
+/* ------------- Win Determination ------------- */
+
+/////////////////////////////////
+/* WIN CONSTANTS and UTILITIES */
+/////////////////////////////////
 
 const rowStartIds = new Array(6)
   .fill(null)
@@ -249,24 +250,24 @@ const rowStartIds = new Array(6)
 // start from bottom row
 const colStartIds = new Array(7)
   .fill(null)
-  .map((_, colIdx) => `col-${colIdx}:5`);
+  .map((_, colIdx) => `col-${colIdx}:0`);
 
 const diagonalAscendingStartIds = [
-  "col-0:3",
-  "col-0:4",
-  "col-0:5",
-  "col-1:5",
-  "col-2:5",
-  "col-3:5",
+  "col-0:2",
+  "col-0:1",
+  "col-0:0",
+  "col-1:0",
+  "col-2:0",
+  "col-3:0",
 ];
 
 const diagonalDescendingStartIds = [
-  "col-3:0",
-  "col-2:0",
-  "col-1:0",
-  "col-0:0",
-  "col-0:1",
-  "col-0:2",
+  "col-3:5",
+  "col-2:5",
+  "col-1:5",
+  "col-0:5",
+  "col-0:4",
+  "col-0:3",
 ];
 
 const idArrays = {
@@ -275,6 +276,33 @@ const idArrays = {
   diagonalAscending: diagonalAscendingStartIds,
   diagonalDescending: diagonalDescendingStartIds,
 };
+
+/////////////////////
+/* WIN CHECK LOGIC */
+/////////////////////
+
+function getDirection(kind) {
+  let direction;
+
+  switch (kind) {
+    case "row":
+      direction = [1, 0];
+      break;
+    case "column":
+      direction = [0, 1];
+      break;
+    case "diagonalAscending":
+      direction = [1, 1];
+      break;
+    case "diagonalDescending":
+      direction = [1, -1];
+      break;
+  }
+
+  return direction;
+}
+
+const getMatrix = () => state.columns;
 
 function getCoord(id) {
   return id
@@ -289,6 +317,7 @@ function foundWin(startCol, startRow, direction, count, totalCount, matrix) {
   try {
     const nextCol = startCol + direction[0];
     const nextRow = startRow + direction[1];
+
     const startPos = matrix[startCol][startRow];
     const nextPos = matrix[nextCol][nextRow];
 
@@ -304,6 +333,10 @@ function foundWin(startCol, startRow, direction, count, totalCount, matrix) {
       return false;
     }
 
+    if (startPos !== nextPos) {
+      count = 0;
+    }
+
     return foundWin(nextCol, nextRow, direction, ++count, ++totalCount, matrix);
   } catch (err) {
     return false;
@@ -311,39 +344,27 @@ function foundWin(startCol, startRow, direction, count, totalCount, matrix) {
 }
 
 function checkWin(kind) {
-  let direction;
-
-  switch (kind) {
-    case "row":
-      direction = [1, 0];
-      break;
-    case "column":
-      direction = [0, -1];
-      break;
-    case "diagonalAscending":
-      direction = [1, -1];
-      break;
-    case "diagonalDescending":
-      direction = [1, 1];
-      break;
-  }
-
   const idArray = idArrays[kind];
+  const direction = getDirection(kind);
   const matrix = getMatrix();
 
   for (let i = 0; i < idArray.length; i++) {
     const [startCol, startRow] = getCoord(idArray[i]);
-    const nextCol = startCol + direction[0];
-    const nextRow = startRow + direction[1];
-    const startPos = matrix[startCol][startRow];
-    const nextPos = matrix[nextCol][nextRow];
-    const count =
-      (startPos === nextPos && startPos && nextPos) || startPos || nextPos
-        ? 1
-        : 0;
-    const totalCount = 0;
+    let count = 0;
+    let totalCount = 0;
 
-    if (foundWin(nextCol, nextRow, direction, count, totalCount, matrix)) {
+    console.log("init values", {
+      kind,
+      startCol,
+      startRow,
+      direction,
+      count,
+      matrix,
+    });
+
+    if (
+      foundWin(startCol, startRow, direction, ++count, ++totalCount, matrix)
+    ) {
       return true;
     }
   }
