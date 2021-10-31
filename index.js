@@ -177,11 +177,10 @@ function initializeBoard() {
     const colIdx = node.id.slice(4).split(":")[0];
 
     if (height[colIdx]) {
-      console.log(height);
-
       height[colIdx]--;
       turn++;
       state.columns[colIdx][5 - height[colIdx]] = move;
+      console.log(`height of column ${colIdx} is ${height[colIdx]}`);
 
       const nodeWhereMoveLandsId = `col-${colIdx}:${height[colIdx]}`;
       const classNameColor = move[0] === "R" ? "red" : "yellow";
@@ -197,7 +196,6 @@ function initializeBoard() {
     const { won, winType } = didWin();
 
     if (won) {
-      console.log("winner");
       document.body.style.backgroundColor = "green";
       document.getElementById("gameMsg").innerText = `Winner: ${winType}`;
     }
@@ -271,7 +269,7 @@ const diagonalDescendingStartIds = [
   "col-0:2",
 ];
 
-const categories = {
+const idArrays = {
   row: rowStartIds,
   column: colStartIds,
   diagonalAscending: diagonalAscendingStartIds,
@@ -285,131 +283,82 @@ function getCoord(id) {
     .map((val) => +val);
 }
 
-function evaluateCategory(
-  category,
-  lastCoord,
-  nextCoord,
-  count,
-  totalCount,
-  matrix
-) {
-  let [lastCol, lastRow] = lastCoord;
-  const nextCol = lastCol + nextCoord[0];
-  const nextRow = lastRow + nextCoord[1];
-
-  let lastPosition = matrix[lastCol][lastRow];
-
-  if (nextCoord[1]) {
-    lastPosition = matrix[lastCol][5 - lastRow];
-  }
-
-  let currPosition;
-
+function foundWin(startCol, startRow, direction, count, totalCount, matrix) {
+  // if check goes off game board function will throw err
+  // try-catch allows us to return false
   try {
-    currPosition = matrix[nextCol][nextRow];
-    if (nextCoord[1]) {
-      currPosition = matrix[nextCol][5 - nextRow];
+    const nextCol = startCol + direction[0];
+    const nextRow = startRow + direction[1];
+    const startPos = matrix[startCol][startRow];
+    const nextPos = matrix[nextCol][nextRow];
+
+    if (startPos !== nextPos || !startPos || !nextPos) {
+      count = 0;
     }
-    if (count === 3 && lastPosition === currPosition) {
-      console.log("evaluateCategory win found!");
+
+    if (count === 3 && startPos === nextPos) {
       return true;
     }
+
+    if (totalCount === 6) {
+      return false;
+    }
+
+    return foundWin(nextCol, nextRow, direction, ++count, ++totalCount, matrix);
   } catch (err) {
-    // console.error(err);
     return false;
   }
-
-  if (totalCount === 6) {
-    return false;
-  }
-
-  const nextPosition = [nextCol, nextRow];
-
-  if (lastPosition !== currPosition || !lastPosition || !currPosition) {
-    count = 0;
-  }
-
-  if (category === "diagonalAscending") {
-    console.log({
-      da: true,
-      lastCoord,
-      nextCoord,
-      lastCol,
-      lastRow,
-      lastPosition,
-      currPosition,
-      count,
-      totalCount,
-      nextCol,
-      nextRow,
-      nextPosition,
-    });
-  }
-
-  return evaluateCategory(
-    category,
-    nextPosition,
-    nextCoord,
-    ++count,
-    ++totalCount,
-    matrix
-  );
 }
 
-function checkWin(category) {
-  const ids = categories[category];
-  console.log({ category });
+function checkWin(kind) {
+  let direction;
 
-  let nextCoord;
-  // coords are [col, row] to match id selectors
-  switch (category) {
+  switch (kind) {
     case "row":
-      nextCoord = [1, 0];
+      direction = [1, 0];
       break;
     case "column":
-      nextCoord = [0, -1];
+      direction = [0, -1];
       break;
     case "diagonalAscending":
-      nextCoord = [1, -1];
+      direction = [1, -1];
       break;
     case "diagonalDescending":
-      nextCoord = [1, 1];
+      direction = [1, 1];
       break;
   }
 
-  for (let i = 0; i < ids.length; i++) {
-    if (category === "diagonalAscending") {
-      console.log({ dA: ids[i], startCoord: getCoord(ids[i]) });
-    }
+  const idArray = idArrays[kind];
+  const matrix = getMatrix();
 
-    const result = evaluateCategory(
-      category,
-      getCoord(ids[i]),
-      nextCoord,
-      0,
-      0,
-      getMatrix()
-    );
+  for (let i = 0; i < idArray.length; i++) {
+    const [startCol, startRow] = getCoord(idArray[i]);
+    const nextCol = startCol + direction[0];
+    const nextRow = startRow + direction[1];
+    const startPos = matrix[startCol][startRow];
+    const nextPos = matrix[nextCol][nextRow];
+    const count =
+      (startPos === nextPos && startPos && nextPos) || startPos || nextPos
+        ? 1
+        : 0;
+    const totalCount = 0;
 
-    console.log({ result, matrix: getMatrix() });
-
-    if (result) {
-      return result;
+    if (foundWin(nextCol, nextRow, direction, count, totalCount, matrix)) {
+      return true;
     }
   }
+
+  return false;
 }
 
 function didWin() {
-  let status = { won: false, winType: "" };
-  const categoryKeys = Object.keys(categories);
+  const kinds = Object.keys(idArrays);
 
-  for (let i = 0; i < categoryKeys.length; i++) {
-    console.log(categoryKeys[i]);
-    if (checkWin(categoryKeys[i])) {
-      console.log("winner!");
-      status = { won: true, winType: categoryKeys[i] };
+  for (let i = 0; i < kinds.length; i++) {
+    if (checkWin(kinds[i])) {
+      return { won: true, msg: "you won!" };
     }
   }
 
-  return status;
+  return { won: false, msg: "keep trying" };
 }
