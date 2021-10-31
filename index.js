@@ -20,6 +20,8 @@ function getMove() {
   return turn % 2 === 0 ? "R" : "Y";
 }
 
+let gameStatus = { won: false, msg: "keep trying!" };
+
 //////////////////////////////////
 /* DOM SETUP: BOARD AND COLUMNS */
 //////////////////////////////////
@@ -192,11 +194,13 @@ function initializeBoard() {
       NEXT_MOVE.innerText = move[0] === "R" ? player2 : player1;
     }
 
-    const { won, winType } = didWin();
+    didWin();
 
-    if (won) {
+    if (gameStatus.won) {
       document.body.style.backgroundColor = "green";
-      document.getElementById("gameMsg").innerText = `Winner: ${winType}`;
+      document.getElementById(
+        "gameMsg"
+      ).innerText = `Winner: ${gameStatus.msg}`;
     }
   });
 }
@@ -215,6 +219,10 @@ function handleComputerMove() {
 function listenForComputerMoves() {
   computerMoveInterval = setInterval(() => {
     handleComputerMove();
+
+    if (gameStatus.won) {
+      clearInterval(computerMoveInterval);
+    }
   }, 1000);
 }
 
@@ -353,15 +361,6 @@ function checkWin(kind) {
     let count = 0;
     let totalCount = 0;
 
-    console.log("init values", {
-      kind,
-      startCol,
-      startRow,
-      direction,
-      count,
-      matrix,
-    });
-
     if (
       foundWin(startCol, startRow, direction, ++count, ++totalCount, matrix)
     ) {
@@ -372,14 +371,19 @@ function checkWin(kind) {
   return false;
 }
 
+function setStatus(newStatus) {
+  gameStatus = newStatus;
+}
+
 function didWin() {
   const kinds = Object.keys(idArrays);
 
   for (let i = 0; i < kinds.length; i++) {
     if (checkWin(kinds[i])) {
-      return { won: true, msg: "you won!" };
+      setStatus({ won: true, msg: "you won!" });
+      return;
     }
   }
 
-  return { won: false, msg: "keep trying" };
+  setStatus({ won: false, msg: "keep trying" });
 }
