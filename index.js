@@ -157,52 +157,57 @@ QUICK_START_BTN.addEventListener("click", () => {
 
 const NEXT_MOVE = document.getElementById("nextMove");
 
+function boardClickHandler(e) {
+  if (e.target.className === "column") {
+    return;
+  }
+
+  let node = e.target;
+
+  if (
+    e.target.className === "board-cell-circle" ||
+    e.target.className === "red-piece" ||
+    e.target.className === "yellow-piece"
+  ) {
+    node = e.target.parentElement;
+  }
+
+  console.log("node.id is: ", node.id);
+
+  const move = getMove();
+  const colIdx = node.id.slice(4).split(":")[0];
+
+  if (height[colIdx] < 6) {
+    height[colIdx]++;
+    turn++;
+    state.columns[colIdx][height[colIdx]] = move;
+
+    const nodeWhereMoveLandsId = `col-${colIdx}:${height[colIdx]}`;
+    const classNameColor = move[0] === "R" ? "red" : "yellow";
+
+    const NODE_WHERE_MOVE_LANDS = document.getElementById(nodeWhereMoveLandsId);
+    NODE_WHERE_MOVE_LANDS.firstElementChild.className = `${classNameColor}-piece`;
+
+    NEXT_MOVE.className = move[0] === "R" ? "yellow" : "red";
+    NEXT_MOVE.innerText = move[0] === "R" ? player2 : player1;
+  }
+
+  didWin();
+
+  if (gameStatus.won) {
+    document.body.style.backgroundColor = "green";
+    const winner = getMove() === "R" ? player2 : player1;
+    const winColor = getMove() === "R" ? "yellow" : "red";
+    document.getElementById(
+      "whoseTurn"
+    ).innerHTML = `<span style="color: ${winColor};">${winner} wins!</span>`;
+    clearInterval(computerMoveInterval);
+    BOARD.removeEventListener("click", boardClickHandler);
+  }
+}
+
 function initializeBoard() {
-  BOARD.addEventListener("click", (e) => {
-    if (e.target.className === "column") {
-      return;
-    }
-
-    let node = e.target;
-
-    if (
-      e.target.className === "board-cell-circle" ||
-      e.target.className === "red-piece" ||
-      e.target.className === "yellow-piece"
-    ) {
-      node = e.target.parentElement;
-    }
-
-    console.log("node.id is: ", node.id);
-
-    const move = getMove();
-    const colIdx = node.id.slice(4).split(":")[0];
-
-    if (height[colIdx] < 6) {
-      height[colIdx]++;
-      turn++;
-      state.columns[colIdx][height[colIdx]] = move;
-
-      const nodeWhereMoveLandsId = `col-${colIdx}:${height[colIdx]}`;
-      const classNameColor = move[0] === "R" ? "red" : "yellow";
-
-      const NODE_WHERE_MOVE_LANDS =
-        document.getElementById(nodeWhereMoveLandsId);
-      NODE_WHERE_MOVE_LANDS.firstElementChild.className = `${classNameColor}-piece`;
-
-      NEXT_MOVE.className = move[0] === "R" ? "yellow" : "red";
-      NEXT_MOVE.innerText = move[0] === "R" ? player2 : player1;
-    }
-
-    didWin();
-
-    if (gameStatus.won) {
-      document.body.style.backgroundColor = "green";
-      document.getElementById(
-        "gameMsg"
-      ).innerText = `Winner: ${gameStatus.msg}`;
-    }
-  });
+  BOARD.addEventListener("click", boardClickHandler);
 }
 
 const nextComputerMove = () =>
@@ -219,10 +224,6 @@ function handleComputerMove() {
 function listenForComputerMoves() {
   computerMoveInterval = setInterval(() => {
     handleComputerMove();
-
-    if (gameStatus.won) {
-      clearInterval(computerMoveInterval);
-    }
   }, 1000);
 }
 
@@ -339,10 +340,6 @@ function foundWin(startCol, startRow, direction, count, totalCount, matrix) {
 
     if (totalCount === 6) {
       return false;
-    }
-
-    if (startPos !== nextPos) {
-      count = 0;
     }
 
     return foundWin(nextCol, nextRow, direction, ++count, ++totalCount, matrix);
