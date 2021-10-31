@@ -3,8 +3,10 @@
 ////////////////
 
 const state = {
-  columns: [[], [], [], [], [], [], []],
+  columns: new Array(7).fill(null).map(() => new Array(6).fill(null)),
 };
+
+const height = [5, 5, 5, 5, 5, 5, 5];
 
 const getMatrix = () => state.columns;
 
@@ -184,12 +186,16 @@ function initializeBoard() {
     const move = getMove();
     const colIdx = node.id.slice(4).split(":")[0];
 
-    if (state.columns[colIdx].length < 6) {
-      state.columns[colIdx].push(move);
+    if (height[colIdx]) {
+      console.log(height);
+
+      const nodeWhereMoveLandsId = `col-${colIdx}:${height[colIdx]}`;
+
+      state.columns[colIdx][height[colIdx]] = move;
+      height[colIdx]--;
       turn++;
 
       const classNameColor = move[0] === "R" ? "red" : "yellow";
-      const nodeWhereMoveLandsId = getNodeIdFromState(colIdx);
 
       const NODE_WHERE_MOVE_LANDS =
         document.getElementById(nodeWhereMoveLandsId);
@@ -290,35 +296,47 @@ function getCoord(id) {
     .map((val) => +val);
 }
 
-function evaluateCategory(startCoord, nextCoord, count, matrix) {
-  const nextPosition = [
-    (startCoord[0] += nextCoord[0]),
-    (startCoord[1] += nextCoord[1]),
-  ];
-  const [nextCol, nextRow] = nextPosition;
+function evaluateCategory(lastCoord, nextCoord, count, totalCount, matrix) {
+  let nextCol = lastCoord[0] + nextCoord[0];
+  let nextRow = lastCoord[1] + nextCoord[1];
 
-  let nextValue;
+  const [lastCol, lastRow] = lastCoord;
+  const lastPosition = matrix[lastCol][lastRow];
+  let currPosition;
+
   try {
-    nextValue = matrix[nextCol][nextRow];
+    currPosition = matrix[nextCol][nextRow];
+    if (count === 3 && lastPosition === currPosition) {
+      console.log("winner!");
+      return true;
+    }
   } catch (err) {
-    console.error(err);
+    // console.error(err);
     return false;
   }
 
-  if (count === 2 && matrix[startCoord[0]][startCoord[1]] === nextValue) {
-    return true;
-  } else {
-    if (count === 5) {
-      return false;
-    }
-    count = 0;
-    return evaluateCategory(nextPosition, nextCoord, ++count, matrix);
+  if (totalCount === 6) {
+    return false;
   }
+
+  const nextPosition = [nextCol, nextRow];
+
+  if (lastPosition !== currPosition || !lastPosition || !currPosition) {
+    count = 0;
+  }
+
+  return evaluateCategory(
+    nextPosition,
+    nextCoord,
+    ++count,
+    ++totalCount,
+    matrix
+  );
 }
 
 function checkWin(category) {
   const ids = categories[category];
-  // console.log(ids.join(""));
+  console.log({ category });
 
   let nextCoord;
   // coords are [col, row] to match id selectors
@@ -330,24 +348,26 @@ function checkWin(category) {
       nextCoord = [0, -1];
       break;
     case "diagonalAscending":
-      nextCoord = [1, 1];
-      break;
-    case "diagonalDescending":
       nextCoord = [1, -1];
       break;
+    case "diagonalDescending":
+      nextCoord = [1, 1];
+      break;
   }
 
-  console.log(ids);
-
-  // for loop here over ids to start
-  // set winner and return if match
   for (let i = 0; i < ids.length; i++) {
-    if (evaluateCategory(getCoord(ids[i]), nextCoord, 0, getMatrix())) {
-      return true;
+    const result = evaluateCategory(
+      getCoord(ids[i]),
+      nextCoord,
+      0,
+      0,
+      getMatrix()
+    );
+
+    if (result) {
+      return result;
     }
   }
-
-  return false;
 }
 
 function didWin() {
@@ -355,7 +375,9 @@ function didWin() {
   const categoryKeys = Object.keys(categories);
 
   for (let i = 0; i < categoryKeys.length; i++) {
+    console.log(categoryKeys[i]);
     if (checkWin(categoryKeys[i])) {
+      console.log("winner!");
       status = { won: true, winType: categoryKeys[i] };
     }
   }
