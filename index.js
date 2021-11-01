@@ -50,14 +50,17 @@ Array.from(document.querySelectorAll('input[type="checkbox"]')).forEach(
   (checkbox) => {
     checkbox.addEventListener("click", (e) => {
       const textInput = e.target.parentElement.previousElementSibling;
+      const inputIcon = textInput.previousElementSibling.lastElementChild;
       if (e.target.checked) {
         textInput.contentEditable = "false";
         textInput.className = "textInputComputer";
         textInput.innerText = "Computer";
+        inputIcon.innerText = "lock";
       } else {
         textInput.contentEditable = "true";
         textInput.className = "textInput";
         textInput.innerText = "";
+        inputIcon.innerText = "lock_open";
       }
     });
   }
@@ -98,17 +101,19 @@ PLAY_BTNS.forEach((button) => {
         );
     }
 
-    console.log(textInput);
+    const inputIcon = textInput.parentElement.querySelector(".inputIcon");
 
     if (e.target.innerText === "Ready") {
       e.target.innerText = "Play";
       e.target.className = "playBtn";
       textInput.contentEditable = "true";
       document.querySelector("#startGameBtn").style.visibility = "hidden";
+      inputIcon.innerText = "lock_open";
     } else {
       e.target.innerText = "Ready";
       e.target.className = "readyBtn";
       textInput.contentEditable = "false";
+      inputIcon.innerText = "lock";
 
       // show start game btn if both players ready
       if (PLAY_BTNS.every((btn) => btn.className === "readyBtn")) {
@@ -172,8 +177,6 @@ function boardClickHandler(e) {
     node = e.target.parentElement;
   }
 
-  console.log("node.id is: ", node.id);
-
   const move = getMove();
   const colIdx = node.id.slice(4).split(":")[0];
 
@@ -192,7 +195,7 @@ function boardClickHandler(e) {
     NEXT_MOVE.innerText = move[0] === "R" ? player2 : player1;
   }
 
-  didWin();
+  checkWin();
 
   if (gameStatus.won) {
     document.body.style.backgroundColor = "green";
@@ -228,7 +231,6 @@ function listenForComputerMoves() {
 }
 
 function startGame() {
-  console.log("game time! :)");
   document.getElementById("enterNames").style.display = "none";
   document.getElementById("board").style.display = "flex";
   document.getElementById("whoseTurn").style.display = "flex";
@@ -348,7 +350,7 @@ function foundWin(startCol, startRow, direction, count, totalCount, matrix) {
   }
 }
 
-function checkWin(kind) {
+function didWin(kind) {
   const idArray = idArrays[kind];
   const direction = getDirection(kind);
   const matrix = getMatrix();
@@ -372,11 +374,11 @@ function setStatus(newStatus) {
   gameStatus = newStatus;
 }
 
-function didWin() {
+function checkWin() {
   const kinds = Object.keys(idArrays);
 
   for (let i = 0; i < kinds.length; i++) {
-    if (checkWin(kinds[i])) {
+    if (didWin(kinds[i])) {
       setStatus({ won: true, msg: "you won!" });
       return;
     }

@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Connect 4!</title>
     <link rel="stylesheet" href="index.css" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
     <script src="index.js" defer></script>
   </head>
   <body>
@@ -21,8 +25,13 @@
         <button id="quickStart">Quick start for debugging</button>
       </div>
       <div class="playerInfoCard">
-        <label>Enter Player 1 Name:</label>
+        <div class="labelAndIcon">
+          <label>Enter Player 1 Name:</label>
+          <i class="material-icons inputIcon">lock_open</i>
+        </div>
+
         <div contenteditable class="textInput" id="inputPlayer1"></div>
+
         <div class="playAsComputerContainer">
           <input
             id="checkboxPlayer1"
@@ -37,8 +46,13 @@
         </div>
       </div>
       <div class="playerInfoCard">
-        <label>Enter Player 2 Name:</label>
+        <div class="labelAndIcon">
+          <label>Enter Player 2 Name:</label>
+          <i class="material-icons inputIcon">lock_open</i>
+        </div>
+
         <div contenteditable class="textInput" id="inputPlayer2"></div>
+
         <div class="playAsComputerContainer">
           <input
             id="checkboxPlayer2"
