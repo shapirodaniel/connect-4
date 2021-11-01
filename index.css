@@ -2,6 +2,10 @@
   box-sizing: border-box;
 }
 
+button {
+  cursor: pointer;
+}
+
 :root {
   --red: red;
   --white: white;
@@ -55,11 +59,6 @@ body {
 label {
   text-align: left;
   width: 100%;
-  color: grey;
-}
-
-label:nth-child(1) {
-  margin-bottom: 0.3em;
 }
 
 label:nth-child(2) {
@@ -68,7 +67,7 @@ label:nth-child(2) {
 }
 
 i {
-  transform: scale(0.65) translateY(56px);
+  transform: scale(0.65) translateY(53px);
 }
 
 .textInput,
@@ -81,7 +80,6 @@ i {
   width: 300px;
   border: 1px solid black;
   border-radius: 5px;
-  margin-top: 0.2em;
   vertical-align: middle;
   padding: 0.5em;
   overflow: scroll;
@@ -98,6 +96,7 @@ i {
 
 input[type="checkbox"] {
   border: transparent;
+  cursor: pointer;
 }
 
 .playBtnContainer {
