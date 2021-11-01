@@ -56,11 +56,13 @@ Array.from(document.querySelectorAll('input[type="checkbox"]')).forEach(
         textInput.className = "textInputComputer";
         textInput.innerText = "Computer";
         inputIcon.innerText = "lock";
+        textInput.style.backgroundColor = "#eee";
       } else {
         textInput.contentEditable = "true";
         textInput.className = "textInput";
         textInput.innerText = "";
         inputIcon.innerText = "lock_open";
+        textInput.style.backgroundColor = "transparent";
       }
     });
   }
@@ -89,6 +91,11 @@ const PLAY_BTNS = Array.from(
   document.querySelectorAll(".playBtnContainer > button")
 );
 
+const START_GAME_BTN = document.getElementById("startGameBtn");
+START_GAME_BTN.addEventListener("click", () => {
+  startGame();
+});
+
 PLAY_BTNS.forEach((button) => {
   button.addEventListener("click", (e) => {
     let textInput =
@@ -101,18 +108,25 @@ PLAY_BTNS.forEach((button) => {
         );
     }
 
-    const inputIcon = textInput.parentElement.querySelector(".inputIcon");
+    const inputIcon = textInput.previousElementSibling.lastElementChild;
 
     if (e.target.innerText === "Ready") {
       e.target.innerText = "Play";
       e.target.className = "playBtn";
       textInput.contentEditable = "true";
-      document.querySelector("#startGameBtn").style.visibility = "hidden";
-      inputIcon.innerText = "lock_open";
+      START_GAME_BTN.style.visibility = "hidden";
+
+      // only clear locks and styling if play as computer is not selected
+      const checkbox = textInput.nextElementSibling.firstElementChild;
+      if (!checkbox.checked) {
+        textInput.style.backgroundColor = "transparent";
+        inputIcon.innerText = "lock_open";
+      }
     } else {
       e.target.innerText = "Ready";
       e.target.className = "readyBtn";
       textInput.contentEditable = "false";
+      textInput.style.backgroundColor = "#eee";
       inputIcon.innerText = "lock";
 
       // show start game btn if both players ready
@@ -130,15 +144,10 @@ PLAY_BTNS.forEach((button) => {
           return;
         }
 
-        document.querySelector("#startGameBtn").style.visibility = "visible";
+        START_GAME_BTN.style.visibility = "visible";
       }
     }
   });
-});
-
-const START_GAME_BTN = document.getElementById("startGameBtn");
-START_GAME_BTN.addEventListener("click", () => {
-  startGame();
 });
 
 ////////////
