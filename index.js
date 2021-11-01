@@ -222,6 +222,7 @@ function boardClickHandler(e) {
     ).innerHTML = `<span style="color: ${winColor};">${winner} wins!</span>`;
     clearInterval(computerMoveInterval);
     BOARD.removeEventListener("click", boardClickHandler);
+    PLAY_AGAIN_BTN.style.visibility = "visible";
   }
 }
 
@@ -262,6 +263,15 @@ function startGame() {
     computerMoveInterval = undefined;
   }
   listenForComputerMoves();
+}
+
+const PLAY_AGAIN_BTN = document.getElementById("playAgainBtn");
+PLAY_AGAIN_BTN.addEventListener("click", () => {
+  playAgain();
+});
+
+function playAgain() {
+  window.location.reload(false);
 }
 
 /* ------------- Win Determination ------------- */

@@ -67,6 +67,10 @@ label:nth-child(2) {
   padding-left: 0.3em;
 }
 
+i {
+  transform: scale(0.65) translateY(56px);
+}
+
 .textInput,
 .textInputComputer {
   display: flex;
@@ -129,7 +133,8 @@ button.readyBtn {
   box-shadow: 4px 4px 0px lightgreen;
 }
 
-#startGameBtn {
+#startGameBtn,
+#playAgainBtn {
   width: 100%;
   border: transparent;
   background-color: green;
@@ -141,6 +146,25 @@ button.readyBtn {
   cursor: pointer;
   visibility: hidden;
   box-shadow: 4px 4px 0px lightgreen;
+}
+
+#playAgainBtn {
+  color: white;
+  background-color: black;
+  box-shadow: 4px 4px 0px lightblue;
+  width: 365px;
+  font-size: 18px;
+  padding: 0.5em 1em;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#playAgainBtn:hover {
+  background-color: white;
+  color: black;
+  box-shadow: 4px 4px 0px black;
 }
 
 /* board */
