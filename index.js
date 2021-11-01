@@ -108,6 +108,13 @@ PLAY_BTNS.forEach((button) => {
         );
     }
 
+    if (textInput.innerText === "") {
+      alert(
+        `Please choose a name Player ${textInput.id[textInput.id.length - 1]}`
+      );
+      return;
+    }
+
     const inputIcon = textInput.previousElementSibling.lastElementChild;
 
     if (e.target.innerText === "Ready") {
