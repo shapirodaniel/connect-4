@@ -138,18 +138,19 @@ PLAY_BTNS.forEach((button) => {
 
       // show start game btn if both players ready
       if (PLAY_BTNS.every((btn) => btn.className === "readyBtn")) {
-        const bothComputer =
-          Array.from(document.querySelectorAll(".textInputComputer")).length ===
-          2;
+        /* comment in 142-153 to require at least one human player :D */
+        // const bothComputer =
+        //   Array.from(document.querySelectorAll(".textInputComputer")).length ===
+        //   2;
 
-        if (bothComputer) {
-          alert(
-            "At least one human player is required! Please change Player 1 or Player 2 and continue"
-          );
-          e.target.innerText = "Play";
-          e.target.className = "playBtn";
-          return;
-        }
+        // if (bothComputer) {
+        //   alert(
+        //     "At least one human player is required! Please change Player 1 or Player 2 and continue"
+        //   );
+        //   e.target.innerText = "Play";
+        //   e.target.className = "playBtn";
+        //   return;
+        // }
 
         START_GAME_BTN.style.visibility = "visible";
       }
