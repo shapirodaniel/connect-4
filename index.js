@@ -60,8 +60,6 @@ Array.from(document.querySelectorAll('input[type="checkbox"]')).forEach(
 
         // set player name on globals
         turn % 2 === 0 ? (player1 = "Computer") : (player2 = "Computer");
-
-        console.log({ player1, player2 });
       } else {
         textInput.contentEditable = "true";
         textInput.className = "textInput";
@@ -187,21 +185,24 @@ QUICK_START_BTN.addEventListener("click", () => {
 
 const NEXT_MOVE = document.getElementById("nextMove");
 
-function boardClickHandler(e) {
-  if (e.target.className === "column") {
-    return;
+function boardClickHandler(e, randomMove) {
+  let node;
+
+  if (!e) {
+    node = randomMove;
+  } else {
+    if (e.target.className === "column") {
+      return;
+    } else if (
+      e.target.className === "board-cell-circle" ||
+      e.target.className === "red-piece" ||
+      e.target.className === "yellow-piece"
+    ) {
+      node = e.target.parentElement;
+    } else {
+      node = e.target;
+    }
   }
-
-  let node = e.target;
-
-  if (
-    e.target.className === "board-cell-circle" ||
-    e.target.className === "red-piece" ||
-    e.target.className === "yellow-piece"
-  ) {
-    node = e.target.parentElement;
-  }
-
   const move = getMove();
   const colIdx = node.id.slice(4).split(":")[0];
 
@@ -218,25 +219,28 @@ function boardClickHandler(e) {
 
     NEXT_MOVE.className = move[0] === "R" ? "yellow" : "red";
     NEXT_MOVE.innerText = move[0] === "R" ? player2 : player1;
+
+    checkWin();
+
+    if (gameStatus.won) {
+      document.body.style.backgroundColor = "green";
+      const winner = getMove() === "R" ? player2 : player1;
+      const winColor = getMove() === "R" ? "yellow" : "red";
+      document.getElementById(
+        "whoseTurn"
+      ).innerHTML = `<span style="color: ${winColor};">${winner} wins!</span>`;
+      clearInterval(computerMoveInterval);
+      BOARD.removeEventListener("click", boardClickHandler);
+      PLAY_AGAIN_BTN.style.visibility = "visible";
+    }
+
+    // if there is a computer player, we'll reenable the board click handler
+    if (randomMove) {
+      BOARD.addEventListener("click", boardClickHandler);
+    } else {
+      BOARD.removeEventListener("click", boardClickHandler);
+    }
   }
-
-  checkWin();
-
-  if (gameStatus.won) {
-    document.body.style.backgroundColor = "green";
-    const winner = getMove() === "R" ? player2 : player1;
-    const winColor = getMove() === "R" ? "yellow" : "red";
-    document.getElementById(
-      "whoseTurn"
-    ).innerHTML = `<span style="color: ${winColor};">${winner} wins!</span>`;
-    clearInterval(computerMoveInterval);
-    BOARD.removeEventListener("click", boardClickHandler);
-    PLAY_AGAIN_BTN.style.visibility = "visible";
-  }
-}
-
-function initializeBoard() {
-  BOARD.addEventListener("click", boardClickHandler);
 }
 
 let computerMoveInterval;
@@ -244,9 +248,10 @@ let computerMoveInterval;
 function listenForComputerMoves() {
   computerMoveInterval = setInterval(() => {
     if (NEXT_MOVE.innerText === "Computer") {
-      COLUMNS[
-        Math.floor(Math.random() * COLUMNS.length)
-      ].firstElementChild.click();
+      const randomMove =
+        COLUMNS[Math.floor(Math.random() * COLUMNS.length)].firstElementChild;
+
+      boardClickHandler(null, randomMove);
     }
   }, 1000);
 }
@@ -255,7 +260,7 @@ function startGame() {
   document.getElementById("enterNames").style.display = "none";
   document.getElementById("board").style.display = "flex";
   document.getElementById("whoseTurn").style.display = "flex";
-  initializeBoard();
+
   if (!player1) {
     player1 = "Computer";
   }
@@ -263,10 +268,15 @@ function startGame() {
     player2 = "Computer";
   }
   document.getElementById("nextMove").innerText = player1;
+
   if (computerMoveInterval) {
     computerMoveInterval = undefined;
   }
   listenForComputerMoves();
+
+  if (player1 !== "Computer") {
+    BOARD.addEventListener("click", boardClickHandler);
+  }
 }
 
 const PLAY_AGAIN_BTN = document.getElementById("playAgainBtn");
