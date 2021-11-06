@@ -57,6 +57,11 @@ Array.from(document.querySelectorAll('input[type="checkbox"]')).forEach(
         textInput.innerText = "Computer";
         inputIcon.innerText = "lock";
         textInput.style.backgroundColor = "#eee";
+
+        // set player name on globals
+        turn % 2 === 0 ? (player1 = "Computer") : (player2 = "Computer");
+
+        console.log({ player1, player2 });
       } else {
         textInput.contentEditable = "true";
         textInput.className = "textInput";
