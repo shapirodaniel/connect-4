@@ -238,7 +238,8 @@ function boardClickHandler(e, randomMove) {
     if (randomMove) {
       BOARD.addEventListener("click", boardClickHandler);
     } else {
-      BOARD.removeEventListener("click", boardClickHandler);
+      if (player1 === "Computer" || player2 === "Computer")
+        BOARD.removeEventListener("click", boardClickHandler);
     }
   }
 }
