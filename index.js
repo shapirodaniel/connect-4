@@ -239,20 +239,15 @@ function initializeBoard() {
   BOARD.addEventListener("click", boardClickHandler);
 }
 
-const nextComputerMove = () =>
-  COLUMNS[Math.floor(Math.random() * COLUMNS.length)].firstElementChild.click();
-
 let computerMoveInterval;
-
-function handleComputerMove() {
-  if (NEXT_MOVE.innerText === "Computer") {
-    nextComputerMove();
-  }
-}
 
 function listenForComputerMoves() {
   computerMoveInterval = setInterval(() => {
-    handleComputerMove();
+    if (NEXT_MOVE.innerText === "Computer") {
+      COLUMNS[
+        Math.floor(Math.random() * COLUMNS.length)
+      ].firstElementChild.click();
+    }
   }, 1000);
 }
 
