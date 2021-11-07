@@ -57,9 +57,6 @@ Array.from(document.querySelectorAll('input[type="checkbox"]')).forEach(
         textInput.innerText = "Computer";
         inputIcon.innerText = "lock";
         textInput.style.backgroundColor = "#eee";
-
-        // set player name on globals
-        turn % 2 === 0 ? (player1 = "Computer") : (player2 = "Computer");
       } else {
         textInput.contentEditable = "true";
         textInput.className = "textInput";
@@ -76,13 +73,6 @@ const TEXT_INPUTS = Array.from(
 );
 
 TEXT_INPUTS.forEach((input) => {
-  input.addEventListener("DOMCharacterDataModified", () => {
-    if (input.id === "inputPlayer1") {
-      player1 = input.innerText;
-    } else {
-      player2 = input.innerText;
-    }
-  });
   input.addEventListener("blur", () => {
     if (input.innerText.length > 20) {
       alert("Please choose a player name less than 20 characters long");
@@ -258,16 +248,12 @@ function listenForComputerMoves() {
 }
 
 function startGame() {
+  player1 = document.getElementById("inputPlayer1").innerText || "Computer";
+  player2 = document.getElementById("inputPlayer2").innerText || "Computer";
+
   document.getElementById("enterNames").style.display = "none";
   document.getElementById("board").style.display = "flex";
   document.getElementById("whoseTurn").style.display = "flex";
-
-  if (!player1) {
-    player1 = "Computer";
-  }
-  if (!player2) {
-    player2 = "Computer";
-  }
   document.getElementById("nextMove").innerText = player1;
 
   if (computerMoveInterval) {
